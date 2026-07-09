@@ -12,7 +12,11 @@ const Form = ({ createShipmentModel, createShipment, setCreateShipmentModel }) =
 
   const createItem = async () => {
     try {
-      await createShipment(shipment);
+      const success = await createShipment(shipment);
+
+      if (success) {
+        setCreateShipmentModel(false);
+      }
     } catch (error) {
       console.log("Error creating shipment transaction context:", error);
     }

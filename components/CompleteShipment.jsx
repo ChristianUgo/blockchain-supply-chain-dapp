@@ -9,7 +9,11 @@ const CompleteShipment = ({ completeModal, completeShipment, setCompleteModal })
   });
 
   const executeCompletion = async () => {
-    await completeShipment(completeObj);
+    const success = await completeShipment(completeObj);
+
+    if (success) {
+      setCompleteModal(false);
+    }
   };
 
 

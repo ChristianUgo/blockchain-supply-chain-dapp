@@ -62,9 +62,12 @@ export const SupplyChainProvider = ({ children }) => {
       );
       await createItem.wait();
       toast.success("Shipment created successfully!");
-      getAllShipments();
+      await getAllShipments();
+
+      return true;
     } catch (error) {
       toast.error(error.reason || error.message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -122,12 +125,17 @@ export const SupplyChainProvider = ({ children }) => {
         await getAllShipments();
 
         toast.success("Shipment dispatched successfully!");
+
+        return true;
       }
     } catch (error) {
       console.error("Failed to start shipment:", error);
+      return false;
     } finally {
       setLoading(false);
     }
+
+    return false;
   };
 
   // --- CORE FUNCTION: COMPLETE SHIPMENT ---
@@ -177,10 +185,12 @@ export const SupplyChainProvider = ({ children }) => {
       // Refresh UI
       await getAllShipments();
 
+      return true;
     } catch (error) {
       console.error("Failed to complete shipment:", error);
 
       toast.error(error.reason || error.message || "Transaction failed");
+      return false;
     } finally {
       if (loadingToast) {
         toast.dismiss(loadingToast);

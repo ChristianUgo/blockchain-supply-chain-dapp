@@ -8,8 +8,12 @@ const StartShipment = ({ startModal, startShipment, setStartModal }) => {
     index: "",
   });
 
-  const startTransit = () => {
-    startShipment(getProduct);
+  const startTransit = async () => {
+    const success = await startShipment(getProduct);
+
+    if (success) {
+      setStartModal(false);
+    }
   };
 
   return startModal ? (

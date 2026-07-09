@@ -1,21 +1,15 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { SupplyChainContext } from "../Context/SupplyChainContext";
 
 const CompleteShipment = ({ completeModal, completeShipment, setCompleteModal }) => {
+  const { loading } = useContext(SupplyChainContext);
   const [completeObj, setCompleteObj] = useState({
     receiver: "",
     index: "",
   });
 
-  const [loading, setLoading] = useState(false);
-
   const executeCompletion = async () => {
-    setLoading(true);
-
-    try {
-      await completeShipment(completeObj);
-    } finally {
-      setLoading(false);
-    }
+    await completeShipment(completeObj);
   };
 
 
@@ -74,8 +68,8 @@ const CompleteShipment = ({ completeModal, completeShipment, setCompleteModal })
             disabled={loading}
             className={`w-full mt-6 flex items-center justify-center gap-2 py-3 px-4 font-black rounded-xl text-sm transition-all
   ${loading
-                ? "bg-slate-700 text-slate-400 cursor-not-allowed"
-                : "text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-90 active:scale-95 shadow-[0_4px_20px_rgba(16,185,129,0.15)]"
+                ? "bg-slate-700 text-slate-400 cursor-not-allowed opacity-70"
+                : "text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-90 active:scale-95"
               }`}
           >
             {loading && (

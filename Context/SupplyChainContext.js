@@ -23,6 +23,7 @@ export const SupplyChainProvider = ({ children }) => {
   const DappName = "Supply Chain Management Dapp";
   const [currentUser, setCurrentUser] = useState("");
   const [allShipments, setAllShipments] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // --- CONNECT WALLET FUNCTION ---
   const connectWallet = async () => {
@@ -41,6 +42,8 @@ export const SupplyChainProvider = ({ children }) => {
   // --- CORE FUNCTION: CREATE SHIPMENT ---
   const createShipment = async (items) => {
     const { receiver, pickupTime, distance, price } = items;
+    setLoading(true);
+
     try {
       const web3Modal = new Web3Modal();
       const connection = await web3Modal.connect();
@@ -62,12 +65,16 @@ export const SupplyChainProvider = ({ children }) => {
       getAllShipments();
     } catch (error) {
       toast.error(error.reason || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   // --- CORE FUNCTION: START SHIPMENT ---
   const startShipment = async (startArgs) => {
     const { receiver, index } = startArgs;
+    setLoading(true);
+
     try {
       if (typeof window !== "undefined" && window.ethereum) {
 
@@ -118,12 +125,17 @@ export const SupplyChainProvider = ({ children }) => {
       }
     } catch (error) {
       console.error("Failed to start shipment:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   // --- CORE FUNCTION: COMPLETE SHIPMENT ---
   const completeShipment = async (items) => {
     const { receiver, index } = items;
+    let loadingToast;
+
+    setLoading(true);
 
     try {
       await window.ethereum.request({
@@ -143,7 +155,7 @@ export const SupplyChainProvider = ({ children }) => {
       console.log("Receiver:", receiver);
       console.log("Index:", index);
 
-      const loadingToast = toast.loading(
+      loadingToast = toast.loading(
         "Waiting for blockchain confirmation..."
       );
 
@@ -169,6 +181,12 @@ export const SupplyChainProvider = ({ children }) => {
       console.error("Failed to complete shipment:", error);
 
       toast.error(error.reason || error.message || "Transaction failed");
+    } finally {
+      if (loadingToast) {
+        toast.dismiss(loadingToast);
+      }
+
+      setLoading(false);
     }
   };
 
@@ -245,6 +263,8 @@ export const SupplyChainProvider = ({ children }) => {
         DappName,
         currentUser,
         allShipments,
+        loading,
+        setLoading,
         connectWallet,
         createShipment,
         startShipment,

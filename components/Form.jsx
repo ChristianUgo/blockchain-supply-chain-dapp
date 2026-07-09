@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { SupplyChainContext } from "../Context/SupplyChainContext";
 
 const Form = ({ createShipmentModel, createShipment, setCreateShipmentModel }) => {
+  const { loading } = useContext(SupplyChainContext);
   const [shipment, setShipment] = useState({
     receiver: "",
     pickupTime: "",
@@ -107,12 +109,37 @@ const Form = ({ createShipmentModel, createShipment, setCreateShipmentModel }) =
           {/* Broadcast Transaction Trigger */}
           <button
             onClick={() => createItem()}
-            className="w-full mt-6 flex items-center justify-center gap-2 py-3 px-4 text-slate-950 font-black bg-gradient-to-r from-emerald-400 to-cyan-400 hover:opacity-90 active:scale-98 transition-all rounded-xl text-sm shadow-[0_4px_20px_rgba(52,211,153,0.15)]"
+            disabled={loading}
+            className={`w-full mt-6 flex items-center justify-center gap-2 py-3 px-4 font-black rounded-xl text-sm transition-all
+${
+  loading
+    ? "bg-slate-700 text-slate-400 cursor-not-allowed opacity-70"
+    : "text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-90 active:scale-95"
+}`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            Broadcast Node Manifest
+            {loading && (
+              <svg
+                className="animate-spin h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            )}
+            {loading ? "Processing Transaction..." : "Broadcast Node Manifest"}
           </button>
         </form>
       </div>

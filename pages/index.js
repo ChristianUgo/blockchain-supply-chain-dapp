@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 
 // INTERNAL COMPONENT IMPORTS
 import {
@@ -35,7 +35,10 @@ const Index = () => {
   const [getModal, setGetModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
+    <div className="relative min-h-screen overflow-hidden bg-[#020617] text-white font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_30%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+      <div className="relative z-10">
       {/* Top Asset Command Navigation Header */}
       <NavBar 
         currentUser={currentUser} 
@@ -50,6 +53,7 @@ const Index = () => {
         setStartModal={setStartModal}
         setCompleteModal={setCompleteModal}
         setGetModal={setGetModal}
+        allShipmentsState={allShipments}
       />
 
       {/* Live Distributed Registry Ledger Table */}
@@ -91,6 +95,7 @@ const Index = () => {
 
       {/* Structural Base Dashboard Footer */}
       <Footer />
+      </div>
     </div>
   );
 };

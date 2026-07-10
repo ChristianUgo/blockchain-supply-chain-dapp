@@ -1,29 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
+import { ethers } from "ethers";
 
 const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
   const [accountBalance, setAccountBalance] = useState("0.00");
+  const [copied, setCopied] = useState(false);
+
+  const fetchBalance = useCallback(async () => {
+    if (typeof window !== "undefined" && window.ethereum && currentUser) {
+      try {
+        const hexBalance = await window.ethereum.request({
+          method: "eth_getBalance",
+          params: [currentUser, "latest"],
+        });
+        const eth = ethers.utils.formatEther(hexBalance);
+        setAccountBalance(Number(eth).toFixed(6));
+      } catch (err) {
+        console.log("Error querying node account balance parameters:", err);
+      }
+    }
+  }, [currentUser]);
 
   // Fetch balance dynamically using standard window.ethereum injection if active
   useEffect(() => {
-    const fetchBalance = async () => {
-      if (typeof window !== "undefined" && window.ethereum && currentUser) {
-        try {
-          const hexBalance = await window.ethereum.request({
-            method: "eth_getBalance",
-            params: [currentUser, "latest"],
-          });
-          // Convert hex Wei balance to standard decimal representation
-          const wei = parseInt(hexBalance, 16);
-          const eth = (wei / 10 ** 18).toFixed(4);
-          setAccountBalance(eth);
-        } catch (err) {
-          console.log("Error querying node account balance parameters:", err);
-        }
-      }
-    };
-
     if (openProfile) fetchBalance();
-  }, [openProfile, currentUser]);
+  }, [fetchBalance, openProfile]);
+
+  const copyAddress = async () => {
+    if (!currentUser || typeof navigator === "undefined" || !navigator.clipboard) return;
+
+    try {
+      await navigator.clipboard.writeText(currentUser);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.log("Error copying wallet address:", err);
+    }
+  };
 
   return openProfile ? (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/60 backdrop-blur-sm flex justify-end">
@@ -38,10 +50,10 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
           <div className="flex items-center justify-between border-b border-slate-800 pb-5 mb-8">
             <div>
               <h3 className="text-white text-xl font-black tracking-tight">
-                Node Identity Profile
+                Wallet Profile
               </h3>
               <p className="text-slate-400 text-xs mt-1">
-                Cryptographic credentials linked to your current registry workspace session.
+                View your connected wallet address and local test balance.
               </p>
             </div>
             <button
@@ -58,18 +70,27 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
           <div className="space-y-6 font-mono text-sm">
             {/* Identity Status Chip */}
             <div className="flex items-center justify-between bg-slate-950/40 border border-slate-800/60 p-4 rounded-xl">
-              <span className="text-slate-400 font-sans text-xs uppercase tracking-wider font-bold">Node Telemetry</span>
+              <span className="text-slate-400 font-sans text-xs uppercase tracking-wider font-bold">Network Status</span>
               <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
-                Synced Localhost
+                Connected to Localhost
               </span>
             </div>
 
             {/* Cryptographic Key Base */}
             <div>
-              <label className="block text-slate-400 font-sans font-bold text-xs uppercase tracking-wider mb-2">
-                Signing Base Address
-              </label>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <label className="block text-slate-400 font-sans font-bold text-xs uppercase tracking-wider">
+                  Wallet Address
+                </label>
+                <button
+                  type="button"
+                  onClick={copyAddress}
+                  className="text-xs font-bold text-emerald-400 transition-colors hover:text-emerald-300"
+                >
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
               <div className="w-full px-4 py-3 border border-slate-800 bg-slate-950/60 text-emerald-400 break-all rounded-xl select-all font-mono text-xs leading-relaxed">
                 {currentUser || "0x0000000000000000000000000000000000000000"}
               </div>
@@ -77,13 +98,25 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
 
             {/* Account Allocation Resource Metrics */}
             <div>
-              <label className="block text-slate-400 font-sans font-bold text-xs uppercase tracking-wider mb-2">
-                Gas Allocation Pool
-              </label>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <label className="block text-slate-400 font-sans font-bold text-xs uppercase tracking-wider">
+                  ETH Balance
+                </label>
+                <button
+                  type="button"
+                  onClick={fetchBalance}
+                  className="text-xs font-bold text-emerald-400 transition-colors hover:text-emerald-300"
+                >
+                  Refresh
+                </button>
+              </div>
               <div className="flex items-baseline justify-between w-full px-4 py-3 border border-slate-800 bg-slate-950/60 rounded-xl">
-                <span className="text-white font-black text-2xl">{accountBalance}</span>
+                <span className="text-white font-black text-2xl tabular-nums">{accountBalance}</span>
                 <span className="text-xs text-emerald-400 font-sans font-black">ETH Gas</span>
               </div>
+              <p className="mt-2 text-xs font-sans text-slate-500">
+                Hardhat accounts start near 10000 ETH, so gas changes are small.
+              </p>
             </div>
 
             {/* Simulated Additional Supply Chain Cargo Metric */}
@@ -102,7 +135,7 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
 
         {/* Footer Authorization / Sign-out Indicator */}
         <div className="border-t border-slate-800 pt-6 mt-6 flex items-center justify-between text-xs text-slate-500">
-          <span>Session Root Hash: V1.0.0</span>
+          <span>Session Root Hash: V2.0.0</span>
           <button
             onClick={() => setOpenProfile(false)}
             className="text-slate-400 hover:text-emerald-400 transition-colors font-bold font-sans"

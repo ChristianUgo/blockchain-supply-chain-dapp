@@ -1,10 +1,10 @@
 {
   "name": "supply-chain-dapp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -19,6 +19,8 @@
     "@nomicfoundation/hardhat-toolbox": "^6.1.2",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "autoprefixer": "^10.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^13.4.12",
     "ethers": "^5.8.0",
     "hardhat": "^2.14.0",
     "postcss": "^8.5.15",

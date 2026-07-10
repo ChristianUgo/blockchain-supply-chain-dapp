@@ -2,16 +2,27 @@ import React, { useState, useEffect, useContext } from "react";
 import { SupplyChainContext } from "../Context/SupplyChainContext";
 import Nav1 from "./SVG/Nav1";
 
-const NavBar = () => {
+const NavBar = ({ setOpenProfile }) => {
   const [state, setState] = useState(false);
-  const { currentUser, connectWallet, setOpenProfile} = useContext(SupplyChainContext);
+  const { currentUser, connectWallet } = useContext(SupplyChainContext);
 
   const navigation = [
-    { title: "Dashboard", path: "#" },
-    { title: "Analytics", path: "#" },
-    { title: "Registry Ledger", path: "#" },
-    { title: "ERC20 Fuel", path: "#" },
+    { title: "Dashboard", target: "dashboard-console" },
+    { title: "Analytics", target: "dashboard-analytics" },
+    { title: "Registry Ledger", target: "registry-ledger" },
+    { title: "Gas Wallet", action: "profile" },
   ];
+
+  const handleNavigation = (item) => {
+    if (item.action === "profile") {
+      setOpenProfile(true);
+      setState(false);
+      return;
+    }
+
+    document.getElementById(item.target)?.scrollIntoView({ behavior: "smooth" });
+    setState(false);
+  };
 
   useEffect(() => {
     document.onclick = (e) => {
@@ -26,7 +37,7 @@ const NavBar = () => {
         <div className="flex items-center justify-between py-4 md:block">
           <a href="#" className="flex items-center gap-2 font-black text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
             <span>CHAINTRAC</span>
-            <span className="text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 tracking-normal font-mono font-normal">V1.0</span>
+            <span className="text-xs px-2 py-0.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 tracking-normal font-mono font-normal">V2.0</span>
           </a>
           <div className="md:hidden">
             <button className="menu-btn text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-900" onClick={() => setState(!state)}>
@@ -47,7 +58,9 @@ const NavBar = () => {
           <ul className="justify-center items-center space-y-4 md:flex md:space-x-8 md:space-y-0 font-medium">
             {navigation.map((item, idx) => (
               <li key={idx} className="text-slate-400 hover:text-emerald-400 text-sm tracking-wide transition-colors duration-200">
-                <a href={item.path} className="block py-1">{item.title}</a>
+                <button type="button" onClick={() => handleNavigation(item)} className="block py-1 text-left">
+                  {item.title}
+                </button>
               </li>
             ))}
           </ul>

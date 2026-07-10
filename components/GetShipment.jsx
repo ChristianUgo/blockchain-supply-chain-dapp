@@ -1,13 +1,32 @@
 import React, { useState } from "react";
 
-const GetShipment = ({ getModal, setGetModal }) => {
+const GetShipment = ({ getModal, setGetModal, allShipmentsState = [] }) => {
   const [index, setIndex] = useState("");
   const [singleShipmentData, setSingleShipmentData] = useState();
+  const [queryError, setQueryError] = useState("");
 
-  // Temporary local mock wrapper matching standard contract struct returns for demonstration
   const getShipmentData = () => {
-    // This is where your context caller usually links data mapping elements
-    console.log("Querying ledger registry state index ID:", index);
+    const shipmentIndex = Number(index);
+
+    if (!Number.isInteger(shipmentIndex) || shipmentIndex < 0) {
+      setSingleShipmentData();
+      setQueryError("Enter a valid ledger index number.");
+      return;
+    }
+
+    const shipment = allShipmentsState[shipmentIndex];
+
+    if (!shipment) {
+      setSingleShipmentData();
+      setQueryError(`No shipment found at ledger index ${shipmentIndex}.`);
+      return;
+    }
+
+    setQueryError("");
+    setSingleShipmentData({
+      ...shipment,
+      ledgerIndex: shipmentIndex,
+    });
   };
 
   const convertTime = (txtTime) => {
@@ -18,6 +37,12 @@ const GetShipment = ({ getModal, setGetModal }) => {
       month: "short",
       day: "2-digit",
     }).format(newTime);
+  };
+
+  const getStatusLabel = (status) => {
+    if (Number(status) === 0) return "Manifested";
+    if (Number(status) === 1) return "In Transit";
+    return "Executed";
   };
 
   return getModal ? (
@@ -51,9 +76,13 @@ const GetShipment = ({ getModal, setGetModal }) => {
             </label>
             <input
               type="number"
+              value={index}
               placeholder="0"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-cyan-400 placeholder-slate-600 font-mono text-sm focus:border-cyan-500/50 focus:outline-none transition-colors"
-              onChange={(e) => setIndex(e.target.value)}
+              onChange={(e) => {
+                setIndex(e.target.value);
+                setQueryError("");
+              }}
             />
           </div>
 
@@ -65,13 +94,23 @@ const GetShipment = ({ getModal, setGetModal }) => {
           </button>
         </form>
 
+        {queryError && (
+          <div className="mt-5 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs font-bold text-amber-300">
+            {queryError}
+          </div>
+        )}
+
         {singleShipmentData && (
           <div className="mt-6 p-4 border border-slate-800 bg-slate-950/40 rounded-xl space-y-2 text-xs text-slate-300">
+            <p><span className="text-slate-500">Ledger Index:</span> {singleShipmentData.ledgerIndex}</p>
             <p className="truncate"><span className="text-slate-500">Sender:</span> {singleShipmentData.sender}</p>
             <p className="truncate"><span className="text-slate-500">Receiver:</span> {singleShipmentData.receiver}</p>
             <p><span className="text-slate-500">Pickup:</span> {convertTime(singleShipmentData.pickupTime)}</p>
+            <p><span className="text-slate-500">Delivery:</span> {convertTime(singleShipmentData.deliveryTime)}</p>
             <p><span className="text-slate-500">Distance:</span> {singleShipmentData.distance} km</p>
             <p><span className="text-slate-500">Cost:</span> {singleShipmentData.price} ETH</p>
+            <p><span className="text-slate-500">Status:</span> {getStatusLabel(singleShipmentData.status)}</p>
+            <p><span className="text-slate-500">Settlement:</span> {singleShipmentData.isPaid ? "Settled" : "Escrowed"}</p>
           </div>
         )}
       </div>

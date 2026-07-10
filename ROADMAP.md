@@ -1,5 +1,24 @@
 # Supply Chain DApp Roadmap
 
+## Version 1 Baseline
+
+- Smart contract shipment lifecycle
+- Wallet connection
+- Toast notifications
+- Global transaction loading state
+- Auto-close transaction modals
+- Repository roadmap
+
+## Version 2 UI/UX Upgrade
+
+- Modern dashboard command center
+- Live dashboard statistics
+- Shipment search
+- Status filters
+- Copy wallet address
+- Improved footer contrast and store badge spacing
+- Production build and lint stability
+
 ## Completed
 
 - Smart contract
@@ -7,15 +26,14 @@
 - Toast notifications
 - Global loading state
 - Auto-close transaction modals
-
-## In Progress
-
 - Dashboard statistics
-
-## Planned
-
 - Shipment search
 - Status filters
 - Copy wallet address
+
+## Planned
+
 - Transaction timeline
 - Mobile optimization
+- Shipment detail view
+- Wallet network health panel

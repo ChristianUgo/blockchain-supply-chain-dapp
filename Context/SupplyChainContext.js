@@ -1,21 +1,69 @@
 import { useState, useEffect, createContext } from "react";
-import Web3Modal from "web3modal";
 import { ethers } from "ethers";
-
-// INTERNAL IMPORT
-import supplyChainJSON from "./SupplyChain.json";
 import toast from "react-hot-toast";
 
-const ContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-const ContractABI = supplyChainJSON.abi;
+import supplyChainJSON from "./SupplyChain.json";
 
-// --- FETCHING SMART CONTRACT ---
-const fetchContract = (signerOrProvider) =>
-  new ethers.Contract(
-    ContractAddress,
-    ContractABI,
-    signerOrProvider
-  );
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS;
+const CONTRACT_ABI = supplyChainJSON.abi;
+const AMOY_CHAIN_ID = "0x13882";
+
+const AMOY_NETWORK = {
+  chainId: AMOY_CHAIN_ID,
+  chainName: "Polygon Amoy",
+  nativeCurrency: {
+    name: "POL",
+    symbol: "POL",
+    decimals: 18,
+  },
+  rpcUrls: ["https://polygon-amoy.drpc.org"],
+  blockExplorerUrls: ["https://amoy.polygonscan.com"],
+};
+
+const getEthereum = () => {
+  if (typeof window === "undefined" || !window.ethereum) {
+    throw new Error("MetaMask is required to use this application.");
+  }
+
+  return window.ethereum;
+};
+
+const ensureAmoyNetwork = async () => {
+  const ethereum = getEthereum();
+
+  try {
+    await ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: AMOY_CHAIN_ID }],
+    });
+  } catch (error) {
+    if (error?.code !== 4902) throw error;
+
+    await ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [AMOY_NETWORK],
+    });
+  }
+
+  return ethereum;
+};
+
+const fetchContract = (signerOrProvider) => {
+  if (!CONTRACT_ADDRESS || !ethers.utils.isAddress(CONTRACT_ADDRESS)) {
+    throw new Error(
+      "The Supply Chain contract address is not configured for this deployment."
+    );
+  }
+
+  return new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signerOrProvider);
+};
+
+const getErrorMessage = (error) =>
+  error?.data?.message ||
+  error?.error?.message ||
+  error?.reason ||
+  error?.message ||
+  "Transaction failed.";
 
 export const SupplyChainContext = createContext();
 
@@ -25,188 +73,129 @@ export const SupplyChainProvider = ({ children }) => {
   const [allShipments, setAllShipments] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // --- CONNECT WALLET FUNCTION ---
   const connectWallet = async () => {
     try {
-      if (!window.ethereum) return console.log("Install MetaMask");
-
-      const accounts = await window.ethereum.request({
+      const ethereum = await ensureAmoyNetwork();
+      const accounts = await ethereum.request({
         method: "eth_requestAccounts",
       });
-      setCurrentUser(accounts[0]);
+
+      setCurrentUser(accounts[0] || "");
+      return accounts[0] || "";
     } catch (error) {
-      console.error("Error connecting wallet:", error);
+      toast.error(getErrorMessage(error));
+      return "";
     }
   };
 
-  // --- CORE FUNCTION: CREATE SHIPMENT ---
   const createShipment = async (items) => {
     const { receiver, pickupTime, distance, price } = items;
     setLoading(true);
 
     try {
-      const web3Modal = new Web3Modal();
-      const connection = await web3Modal.connect();
-      const provider = new ethers.providers.Web3Provider(connection);
+      const ethereum = await ensureAmoyNetwork();
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const contract = fetchContract(signer);
+      const payment = ethers.utils.parseEther(price.toString());
 
-      const createItem = await contract.createShipment(
+      const transaction = await contract.createShipment(
         receiver,
         new Date(pickupTime).getTime(),
         distance,
-        ethers.utils.parseUnits(price, 18),
-        {
-          value: ethers.utils.parseUnits(price, 18),
-        }
+        payment,
+        { value: payment }
       );
-      await createItem.wait();
+
+      await transaction.wait();
       toast.success("Shipment created successfully!");
       await getAllShipments();
-
       return true;
     } catch (error) {
-      toast.error(error.reason || error.message);
+      toast.error(getErrorMessage(error));
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  // --- CORE FUNCTION: START SHIPMENT ---
   const startShipment = async (startArgs) => {
     const { receiver, index } = startArgs;
     setLoading(true);
 
     try {
-      if (typeof window !== "undefined" && window.ethereum) {
-
-        // FORCE MetaMask to switch to your local chain automatically
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0x7a69" }], // 31337 in Hexadecimal for Hardhat node
-          });
-        } catch (switchError) {
-          // If the network isn't added to their MetaMask yet, add it
-          if (switchError.code === 4902) {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [{
-                chainId: "0x7a69",
-                chainName: "Hardhat Localhost",
-                rpcUrls: ["http://127.0.0.1:8545"],
-                nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }
-              }]
-            });
-          }
-        }
-
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(ContractAddress, ContractABI, signer);
-
-        const sender = await signer.getAddress();
-
-        console.log("==================================");
-        console.log("Sender :", sender);
-        console.log("Receiver :", receiver);
-        console.log("Index :", index);
-        console.log("==================================");
-
-        const tx = await contract.startShipment(
-          sender,
-          receiver,
-          index
-        );
-
-        await tx.wait();
-
-        await getAllShipments();
-
-        toast.success("Shipment dispatched successfully!");
-
-        return true;
-      }
-    } catch (error) {
-      console.error("Failed to start shipment:", error);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-
-    return false;
-  };
-
-  // --- CORE FUNCTION: COMPLETE SHIPMENT ---
-  const completeShipment = async (items) => {
-    const { receiver, index } = items;
-    let loadingToast;
-
-    setLoading(true);
-
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x7a69" }],
-      });
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const ethereum = await ensureAmoyNetwork();
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
-
-      // sender = currently connected MetaMask account
       const sender = await signer.getAddress();
-
       const contract = fetchContract(signer);
 
-      console.log("Sender:", sender);
-      console.log("Receiver:", receiver);
-      console.log("Index:", index);
-
-      loadingToast = toast.loading(
-        "Waiting for blockchain confirmation..."
-      );
-
-      const tx = await contract.completeShipment(
+      const transaction = await contract.startShipment(
         sender,
         receiver,
         index
       );
 
-      // Wait until the transaction is mined
-      await tx.wait();
-
-      // Remove loading toast
-      toast.dismiss(loadingToast);
-
-      // Success toast
-      toast.success("Shipment completed successfully!");
-
-      // Refresh UI
+      await transaction.wait();
       await getAllShipments();
-
+      toast.success("Shipment dispatched successfully!");
       return true;
     } catch (error) {
-      console.error("Failed to complete shipment:", error);
-
-      toast.error(error.reason || error.message || "Transaction failed");
+      toast.error(getErrorMessage(error));
       return false;
     } finally {
-      if (loadingToast) {
-        toast.dismiss(loadingToast);
-      }
-
       setLoading(false);
     }
   };
 
-  // --- CORE FUNCTION: GET ALL TRANSACTIONS / SHIPMENTS ---
+  const completeShipment = async (items) => {
+    const { receiver, index } = items;
+    let loadingToast;
+    setLoading(true);
+
+    try {
+      const ethereum = await ensureAmoyNetwork();
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      await provider.send("eth_requestAccounts", []);
+      const signer = provider.getSigner();
+      const sender = await signer.getAddress();
+      const contract = fetchContract(signer);
+
+      loadingToast = toast.loading("Waiting for blockchain confirmation...");
+
+      const transaction = await contract.completeShipment(
+        sender,
+        receiver,
+        index
+      );
+
+      await transaction.wait();
+      await getAllShipments();
+      toast.success("Shipment completed successfully!");
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+      return false;
+    } finally {
+      if (loadingToast) toast.dismiss(loadingToast);
+      setLoading(false);
+    }
+  };
+
   const getAllShipments = async () => {
     try {
-      if (!window.ethereum) return;
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const contract = fetchContract(provider);
+      const ethereum = getEthereum();
+      const chainId = await ethereum.request({ method: "eth_chainId" });
 
+      if (chainId?.toLowerCase() !== AMOY_CHAIN_ID) {
+        setAllShipments([]);
+        return [];
+      }
+
+      const provider = new ethers.providers.Web3Provider(ethereum);
+      const contract = fetchContract(provider);
       const shipments = await contract.getAllTransactions();
 
       const cleanShipments = shipments.map((shipment) => ({
@@ -221,51 +210,59 @@ export const SupplyChainProvider = ({ children }) => {
       }));
 
       setAllShipments(cleanShipments);
+      return cleanShipments;
     } catch (error) {
       console.error("Failed to fetch shipments:", error);
+      setAllShipments([]);
+      return [];
     }
   };
 
-  // 1. Check if an active wallet session already exists silently on boot
-  const checkIfWalletIsConnected = async () => {
-    try {
-      if (!window.ethereum) return;
-      const accounts = await window.ethereum.request({ method: "eth_accounts" });
-      if (accounts.length > 0) {
-        setCurrentUser(accounts[0]);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.ethereum) return undefined;
+
+    const ethereum = window.ethereum;
+
+    const restoreWallet = async () => {
+      try {
+        const [accounts, chainId] = await Promise.all([
+          ethereum.request({ method: "eth_accounts" }),
+          ethereum.request({ method: "eth_chainId" }),
+        ]);
+
+        if (accounts.length > 0 && chainId?.toLowerCase() === AMOY_CHAIN_ID) {
+          setCurrentUser(accounts[0]);
+        }
+      } catch (error) {
+        console.error("Unable to restore wallet session:", error);
       }
-    } catch (error) {
-      console.error("Silent session tracking check failed:", error);
-    }
-  };
-
-  // 2. Trigger runtime checks separately without locking manual interactions
-  useEffect(() => {
-    checkIfWalletIsConnected();
-  }, []);
-
-  // 3. Automatically fetch database records only AFTER a user address context turns active
-  useEffect(() => {
-    if (currentUser) {
-      getAllShipments();
-    }
-  }, [currentUser]);
-  useEffect(() => {
-    if (!window.ethereum) return;
-
-    const handleChainChanged = () => {
-      window.location.reload();
     };
 
-    window.ethereum.on("chainChanged", handleChainChanged);
+    const handleAccountsChanged = (accounts) => {
+      setCurrentUser(accounts[0] || "");
+      if (accounts.length === 0) setAllShipments([]);
+    };
+
+    const handleChainChanged = (chainId) => {
+      if (chainId?.toLowerCase() !== AMOY_CHAIN_ID) {
+        setCurrentUser("");
+        setAllShipments([]);
+      }
+    };
+
+    restoreWallet();
+    ethereum.on("accountsChanged", handleAccountsChanged);
+    ethereum.on("chainChanged", handleChainChanged);
 
     return () => {
-      window.ethereum.removeListener(
-        "chainChanged",
-        handleChainChanged
-      );
+      ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      ethereum.removeListener("chainChanged", handleChainChanged);
     };
   }, []);
+
+  useEffect(() => {
+    if (currentUser) getAllShipments();
+  }, [currentUser]);
 
   return (
     <SupplyChainContext.Provider

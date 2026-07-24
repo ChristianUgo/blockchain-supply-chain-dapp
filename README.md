@@ -1,38 +1,78 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Blockchain Supply Chain DApp — V2
 
-## Getting Started
+A decentralized shipment-tracking application built with Solidity, Next.js, Ethers.js, MetaMask, and Polygon Amoy.
 
-First, run the development server:
+[Portfolio](https://christianugo.com) · [V1 source](https://github.com/ChristianUgo/blockchain-supply-chain-dapp/tree/v1) · [V2 source](https://github.com/ChristianUgo/blockchain-supply-chain-dapp/tree/v2)
+
+## Overview
+
+The application records shipment creation, dispatch, delivery, and payment state on-chain. V2 preserves the Solidity workflow from V1 while introducing a redesigned operations dashboard, clearer shipment views, and improved wallet feedback.
+
+## Features
+
+- Connect MetaMask and request the Polygon Amoy network.
+- Create a shipment with receiver, pickup time, distance, and escrowed test POL.
+- Start a pending shipment.
+- Complete a shipment and release its escrowed payment.
+- View shipment status and transaction history.
+- Restore connected-wallet state and respond to account or network changes.
+- Configure the deployed contract through a public environment variable.
+
+## Stack
+
+- Next.js 13 and React 18
+- Solidity and Hardhat
+- Ethers.js and MetaMask
+- Tailwind CSS
+- Polygon Amoy
+- Vercel
+
+## Local Setup
+
+```bash
+git clone https://github.com/ChristianUgo/blockchain-supply-chain-dapp.git
+cd blockchain-supply-chain-dapp
+git checkout v2
+npm install
+```
+
+Copy `.env.example` to `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS=your_polygon_amoy_contract_address
+```
+
+Start the application:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Production Build
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+```bash
+npm run lint
+npm run build
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+The frontend requires a deployed `SupplyChain.sol` contract on Polygon Amoy. Add its address to `NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS` in Vercel for Production and Preview, then redeploy the project.
 
-## Learn More
+Planned live versions:
 
-To learn more about Next.js, take a look at the following resources:
+- V1: [supply-v1.christianugo.com](https://supply-v1.christianugo.com)
+- V2: [supply-v2.christianugo.com](https://supply-v2.christianugo.com)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Security Notice
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+This is an unaudited testnet portfolio project. Use Polygon Amoy test POL only. Never commit wallet private keys, seed phrases, RPC secrets, or `.env.local`.
 
-## Deploy on Vercel
+## Author
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Developed and maintained by **Christian Ugo**.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [Portfolio](https://christianugo.com)
+- [GitHub](https://github.com/ChristianUgo)

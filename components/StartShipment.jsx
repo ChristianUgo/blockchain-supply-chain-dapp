@@ -27,7 +27,7 @@ const StartShipment = ({ startModal, startShipment, setStartModal }) => {
               Dispatch Freight Cargo
             </h3>
             <p className="text-slate-400 text-xs mt-1">
-              Transition a contract record node state directly to 'In Transit'.
+              Transition a contract record node state directly to &lsquo;In Transit&rsquo;.
             </p>
           </div>
           <button

@@ -16,7 +16,7 @@ const AMOY_NETWORK = {
     symbol: "POL",
     decimals: 18,
   },
-  rpcUrls: ["https://polygon-amoy.drpc.org"],
+  rpcUrls: ["https://polygon-amoy-bor-rpc.publicnode.com"],
   blockExplorerUrls: ["https://amoy.polygonscan.com"],
 };
 

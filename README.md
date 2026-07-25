@@ -39,7 +39,7 @@ npm install
 Copy `.env.example` to `.env.local`:
 
 ```env
-NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS=your_polygon_amoy_contract_address
+NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS=0x2d3d3072b0fadf16fb6365766fdedba0ddd2478a
 ```
 
 Start the application:
@@ -59,7 +59,9 @@ npm run build
 
 ## Deployment
 
-The frontend requires a deployed `SupplyChain.sol` contract on Polygon Amoy. Add its address to `NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS` in Vercel for Production and Preview, then redeploy the project.
+The shared `SupplyChain.sol` contract is deployed on Polygon Amoy at
+[`0x2d3d3072b0fadf16fb6365766fdedba0ddd2478a`](https://amoy.polygonscan.com/address/0x2d3d3072b0fadf16fb6365766fdedba0ddd2478a).
+Add this address to `NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS` in Vercel for Production and Preview, then redeploy the project.
 
 Planned live versions:
 

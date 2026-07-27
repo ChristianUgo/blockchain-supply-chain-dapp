@@ -100,7 +100,7 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
             <div>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <label className="block text-slate-400 font-sans font-bold text-xs uppercase tracking-wider">
-                  ETH Balance
+                  POL Balance
                 </label>
                 <button
                   type="button"
@@ -112,10 +112,10 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
               </div>
               <div className="flex items-baseline justify-between w-full px-4 py-3 border border-slate-800 bg-slate-950/60 rounded-xl">
                 <span className="text-white font-black text-2xl tabular-nums">{accountBalance}</span>
-                <span className="text-xs text-emerald-400 font-sans font-black">ETH Gas</span>
+                <span className="text-xs text-emerald-400 font-sans font-black">POL Gas</span>
               </div>
               <p className="mt-2 text-xs font-sans text-slate-500">
-                Hardhat accounts start near 10000 ETH, so gas changes are small.
+                Polygon Amoy uses test POL for transaction fees.
               </p>
             </div>
 

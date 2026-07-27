@@ -7,6 +7,8 @@ import supplyChainJSON from "./SupplyChain.json";
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SUPPLY_CHAIN_ADDRESS;
 const CONTRACT_ABI = supplyChainJSON.abi;
 const AMOY_CHAIN_ID = "0x13882";
+const AMOY_MIN_PRIORITY_FEE = ethers.utils.parseUnits("25", "gwei");
+const AMOY_MIN_MAX_FEE = ethers.utils.parseUnits("50", "gwei");
 
 const AMOY_NETWORK = {
   chainId: AMOY_CHAIN_ID,
@@ -65,6 +67,19 @@ const getErrorMessage = (error) =>
   error?.message ||
   "Transaction failed.";
 
+const getAmoyFeeOverrides = async (provider) => {
+  const feeData = await provider.getFeeData();
+  const maxPriorityFeePerGas =
+    feeData.maxPriorityFeePerGas?.gt(AMOY_MIN_PRIORITY_FEE)
+      ? feeData.maxPriorityFeePerGas
+      : AMOY_MIN_PRIORITY_FEE;
+  const maxFeePerGas = feeData.maxFeePerGas?.gt(AMOY_MIN_MAX_FEE)
+    ? feeData.maxFeePerGas
+    : AMOY_MIN_MAX_FEE;
+
+  return { maxPriorityFeePerGas, maxFeePerGas };
+};
+
 export const SupplyChainContext = createContext();
 
 export const SupplyChainProvider = ({ children }) => {
@@ -98,6 +113,7 @@ export const SupplyChainProvider = ({ children }) => {
       await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const contract = fetchContract(signer);
+      const feeOverrides = await getAmoyFeeOverrides(provider);
       const payment = ethers.utils.parseEther(price.toString());
 
       const transaction = await contract.createShipment(
@@ -105,7 +121,7 @@ export const SupplyChainProvider = ({ children }) => {
         new Date(pickupTime).getTime(),
         distance,
         payment,
-        { value: payment }
+        { value: payment, ...feeOverrides }
       );
 
       await transaction.wait();
@@ -131,11 +147,13 @@ export const SupplyChainProvider = ({ children }) => {
       const signer = provider.getSigner();
       const sender = await signer.getAddress();
       const contract = fetchContract(signer);
+      const feeOverrides = await getAmoyFeeOverrides(provider);
 
       const transaction = await contract.startShipment(
         sender,
         receiver,
-        index
+        index,
+        feeOverrides
       );
 
       await transaction.wait();
@@ -162,13 +180,15 @@ export const SupplyChainProvider = ({ children }) => {
       const signer = provider.getSigner();
       const sender = await signer.getAddress();
       const contract = fetchContract(signer);
+      const feeOverrides = await getAmoyFeeOverrides(provider);
 
       loadingToast = toast.loading("Waiting for blockchain confirmation...");
 
       const transaction = await contract.completeShipment(
         sender,
         receiver,
-        index
+        index,
+        feeOverrides
       );
 
       await transaction.wait();

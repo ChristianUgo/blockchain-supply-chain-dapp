@@ -65,7 +65,7 @@ const Table = ({ allShipmentsState, setStartModal }) => {
                     </td>
                     <td className="px-6 py-4 text-slate-400 font-sans">{convertTime(shipment.pickupTime)}</td>
                     <td className="px-6 py-4 font-sans font-medium">{shipment.distance} <span className="text-xs text-slate-500 font-mono">KM</span></td>
-                    <td className="px-6 py-4 font-bold text-slate-100">{shipment.price} <span className="text-xs text-emerald-400 font-sans">ETH</span></td>
+                    <td className="px-6 py-4 font-bold text-slate-100">{shipment.price} <span className="text-xs text-emerald-400 font-sans">POL</span></td>
                     <td className="px-6 py-4 text-slate-400 font-sans">{convertTime(shipment.deliveryTime)}</td>
                     <td className="px-6 py-4 font-sans">
                       {shipment.isPaid ? (

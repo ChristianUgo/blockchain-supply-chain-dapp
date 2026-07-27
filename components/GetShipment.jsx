@@ -71,7 +71,7 @@ const GetShipment = ({ getModal, setGetModal }) => {
             <p className="truncate"><span className="text-slate-500">Receiver:</span> {singleShipmentData.receiver}</p>
             <p><span className="text-slate-500">Pickup:</span> {convertTime(singleShipmentData.pickupTime)}</p>
             <p><span className="text-slate-500">Distance:</span> {singleShipmentData.distance} km</p>
-            <p><span className="text-slate-500">Cost:</span> {singleShipmentData.price} ETH</p>
+            <p><span className="text-slate-500">Cost:</span> {singleShipmentData.price} POL</p>
           </div>
         )}
       </div>

@@ -82,7 +82,7 @@ const Profile = ({ openProfile, setOpenProfile, currentUser }) => {
               </label>
               <div className="flex items-baseline justify-between w-full px-4 py-3 border border-slate-800 bg-slate-950/60 rounded-xl">
                 <span className="text-white font-black text-2xl">{accountBalance}</span>
-                <span className="text-xs text-emerald-400 font-sans font-black">ETH Gas</span>
+                <span className="text-xs text-emerald-400 font-sans font-black">POL Gas</span>
               </div>
             </div>
 

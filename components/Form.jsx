@@ -106,7 +106,7 @@ const Form = ({ createShipmentModel, createShipment, setCreateShipmentModel }) =
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-100 placeholder-slate-600 font-bold focus:border-emerald-500/50 focus:outline-none transition-colors"
                 onChange={(e) => setShipment({ ...shipment, price: e.target.value })}
               />
-              <span className="absolute right-4 top-2.5 text-xs text-emerald-400 font-sans font-black">ETH</span>
+              <span className="absolute right-4 top-2.5 text-xs text-emerald-400 font-sans font-black">POL</span>
             </div>
           </div>
 

@@ -108,7 +108,7 @@ const GetShipment = ({ getModal, setGetModal, allShipmentsState = [] }) => {
             <p><span className="text-slate-500">Pickup:</span> {convertTime(singleShipmentData.pickupTime)}</p>
             <p><span className="text-slate-500">Delivery:</span> {convertTime(singleShipmentData.deliveryTime)}</p>
             <p><span className="text-slate-500">Distance:</span> {singleShipmentData.distance} km</p>
-            <p><span className="text-slate-500">Cost:</span> {singleShipmentData.price} ETH</p>
+            <p><span className="text-slate-500">Cost:</span> {singleShipmentData.price} POL</p>
             <p><span className="text-slate-500">Status:</span> {getStatusLabel(singleShipmentData.status)}</p>
             <p><span className="text-slate-500">Settlement:</span> {singleShipmentData.isPaid ? "Settled" : "Escrowed"}</p>
           </div>
